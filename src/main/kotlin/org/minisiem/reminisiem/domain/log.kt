@@ -21,21 +21,21 @@ class Log(
     @Column(name = "client_ip", length = 100)
     var clientIp: String,
 
-    @CreationTimestamp
     @Column(name = "occurred_at")
     var occurredAt: LocalDateTime,
 
+    @CreationTimestamp
     @Column(name = "collected_at")
     var collectedAt: LocalDateTime? = null,
 
     @Column(name = "http_method", length = 50)
-    var httpMethod: String,
+    var httpMethod: String? = null,
 
     @Column(name = "request_path", length = 2048)
-    var requestPath: String,
+    var requestPath: String? = null,
 
     @Column(name = "status_code")
-    var statusCode: Int,
+    var statusCode: Int? = null,
 
     @Column(name = "response_size")
     var responseSize: Long? = null,
