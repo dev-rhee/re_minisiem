@@ -1,18 +1,30 @@
 package org.minisiem.reminisiem.collector
 
+import org.minisiem.reminisiem.domain.FileOffSet
+import org.minisiem.reminisiem.domain.FileOffsetRepository
+import org.springframework.batch.core.BatchStatus
+import org.springframework.batch.core.ExitStatus
+import org.springframework.batch.core.listener.StepExecutionListener
+import org.springframework.batch.core.step.StepExecution
 import org.springframework.batch.infrastructure.item.ExecutionContext
 import org.springframework.batch.infrastructure.item.ItemStreamReader
 import java.io.RandomAccessFile
+import java.time.LocalDateTime
 
 
-class LogFileReader(private val filePath: String, private val startOffset: Long) : ItemStreamReader<String>{
+class LogFileReader(
+    private val filePath: String,
+    private val fileOffsetRepository: FileOffsetRepository
+) : ItemStreamReader<String>, StepExecutionListener {
     private lateinit var raf: RandomAccessFile
 
     // Step 끝난 뒤 "어디까지 읽었는지" 다른 코드가 꺼내 쓸 수 있게
-    var currentOffset: Long = startOffset
+    var currentOffset: Long = 0L
         private set
 
     override fun open(executionContext: ExecutionContext) {
+        val startOffset = fileOffsetRepository.findByFilePath(filePath)?.byteOffset ?: 0L
+        currentOffset = startOffset
         raf = RandomAccessFile(filePath, "r")
         raf.seek(startOffset)          // 딱 한 번만, 여기서
     }
@@ -31,6 +43,22 @@ class LogFileReader(private val filePath: String, private val startOffset: Long)
 
     override fun close() {
         raf.close()
+    }
+
+    override fun afterStep(stepExecution: StepExecution): ExitStatus? {
+        if (stepExecution.status != BatchStatus.COMPLETED) {
+            return null
+        }
+        val existing = fileOffsetRepository.findByFilePath(filePath)
+        if (existing != null) {
+            existing.byteOffset = currentOffset
+            fileOffsetRepository.save(existing)
+        } else {
+            fileOffsetRepository.save(
+                FileOffSet(filePath = filePath, byteOffset = currentOffset, lastReadAt = LocalDateTime.now())
+            )
+        }
+        return null
     }
 
 }

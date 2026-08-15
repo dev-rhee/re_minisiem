@@ -2,6 +2,7 @@ package org.minisiem.reminisiem
 
 import org.minisiem.reminisiem.collector.LogFileReader
 import org.minisiem.reminisiem.collector.LogItemProcessor
+import org.minisiem.reminisiem.domain.FileOffsetRepository
 import org.minisiem.reminisiem.domain.Log
 import org.minisiem.reminisiem.domain.LogRepository
 import org.springframework.batch.core.job.Job
@@ -20,6 +21,8 @@ import org.springframework.transaction.PlatformTransactionManager
 @Configuration
 class BatchConfig {
 
+    private val filePath = "C:/tmp/nginx/access.log" // 테스트용 값
+
     @Bean
     fun logItemWriter(logRepository: LogRepository): RepositoryItemWriter<Log> {
         return RepositoryItemWriterBuilder<Log>()
@@ -30,13 +33,18 @@ class BatchConfig {
 
     @Bean
     fun logStep(jobRepository: JobRepository,
-                transactionManager : PlatformTransactionManager , writer: RepositoryItemWriter<Log>): Step {
+                transactionManager : PlatformTransactionManager,
+                writer: RepositoryItemWriter<Log>,
+                fileOffsetRepository: FileOffsetRepository): Step {
+        val reader = LogFileReader(filePath, fileOffsetRepository)
+
         return StepBuilder("logReaderStep", jobRepository)
             .chunk<String,Log>(10)
             .transactionManager(transactionManager)
-            .reader(LogFileReader("C:/tmp/nginx/access.log", 0L)) // 테스트용 값
+            .reader(reader)
             .processor(LogItemProcessor())
             .writer(writer)
+            .listener(reader)
             .build()
     }
 
