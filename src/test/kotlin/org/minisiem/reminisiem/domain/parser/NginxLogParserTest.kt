@@ -12,7 +12,7 @@ class NginxLogParserTest {
     @Test
     fun `정상적인 Nginx 로그가 들어오면 DTO로 변환된다`() {
         // Given
-        val rawLog = """127.0.0.1 - - [06/Jul/2026:18:40:35 +0900] "GET /api/v1/logs HTTP/1.1" 200 1024 "-" "Mozilla/5.0""""
+        val rawLog = """127.0.0.1 - - [15/Aug/2026:18:40:35 +0900] "GET /api/v1/logs HTTP/1.1" 200 1024 "-" "Mozilla/5.0""""
 
         // When
         val result = parser.parse(rawLog)
@@ -30,7 +30,7 @@ class NginxLogParserTest {
     fun `응답크기가 대시이고 유저에이전트가 없으면 null로 안전하게 처리된다`(){
 
         // Given (맨 뒤에 유저 에이전트가 없고, 사이즈가 - 인 로그)
-        val rawLog = """192.168.0.5 - - [06/Jul/2026:18:42:10 +0900] "POST /login HTTP/1.1" 401 -"""
+        val rawLog = """192.168.0.5 - - [15/Aug/2026:18:42:10 +0900] "POST /login HTTP/1.1" 401 -"""
 
         //when
         var result = parser.parse(rawLog)
