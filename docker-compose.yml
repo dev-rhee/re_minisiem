@@ -20,6 +20,8 @@ services:
   app:
     build: .
     container_name: resiem-app
+    labels:
+      org.springframework.boot.ignore: true
     depends_on:
       db:
         condition: service_healthy
