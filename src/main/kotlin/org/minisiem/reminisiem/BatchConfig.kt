@@ -2,6 +2,7 @@ package org.minisiem.reminisiem
 
 import org.minisiem.reminisiem.collector.LogFileReader
 import org.minisiem.reminisiem.collector.LogItemProcessor
+import org.minisiem.reminisiem.collector.OffsetSyncWriteListener
 import org.minisiem.reminisiem.domain.FileOffsetRepository
 import org.minisiem.reminisiem.domain.Log
 import org.minisiem.reminisiem.domain.LogRepository
@@ -37,6 +38,7 @@ class BatchConfig {
                 writer: RepositoryItemWriter<Log>,
                 fileOffsetRepository: FileOffsetRepository): Step {
         val reader = LogFileReader(filePath, fileOffsetRepository)
+        val offsetSyncWriteListener = OffsetSyncWriteListener(reader, fileOffsetRepository, filePath)
 
         return StepBuilder("logReaderStep", jobRepository)
             .chunk<String,Log>(10)
@@ -44,7 +46,7 @@ class BatchConfig {
             .reader(reader)
             .processor(LogItemProcessor())
             .writer(writer)
-            .listener(reader)
+            .listener(offsetSyncWriteListener)
             .build()
     }
 
