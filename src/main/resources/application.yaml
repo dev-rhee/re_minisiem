@@ -1,3 +1,6 @@
 spring:
   application:
     name: re_minisiem
+  batch:
+    job:
+      enabled: false

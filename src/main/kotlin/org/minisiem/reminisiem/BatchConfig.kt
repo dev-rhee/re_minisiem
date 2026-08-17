@@ -16,9 +16,10 @@ import org.springframework.batch.infrastructure.item.data.RepositoryItemWriter
 import org.springframework.batch.infrastructure.item.data.builder.RepositoryItemWriterBuilder
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
+import org.springframework.scheduling.annotation.EnableScheduling
 import org.springframework.transaction.PlatformTransactionManager
 
-
+@EnableScheduling
 @Configuration
 class BatchConfig {
 
