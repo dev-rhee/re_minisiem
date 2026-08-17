@@ -1,11 +1,13 @@
 package org.minisiem.reminisiem.domain.parser
 
+import org.slf4j.LoggerFactory
 import java.time.LocalDate
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
 import java.util.Locale
 
 class NginxLogParser : LogParser {
+    private val log = LoggerFactory.getLogger(javaClass)
     val pattern  = """^(\S+)\s+\S+\s+\S+\s+\[([^\]]+)\]\s+"(\w+)\s+(\S+)\s+\S+"\s+(\d{3})\s+(\d+|-)(?:\s+"[^"]*"\s+"([^"]*)")?${'$'}""".toRegex()
     val logType = "NGINX"
     // Nginx 타임존 포맷 전용 포매터 정의
@@ -32,7 +34,7 @@ class NginxLogParser : LogParser {
             )
 
         } else {
-            println("로그 포맷이 일치하지 않아 파싱할 수 없습니다: $rawLog")
+            log.warn("로그 포맷이 일치하지 않아 파싱할 수 없습니다: {}", rawLog)
             return null
         }
 

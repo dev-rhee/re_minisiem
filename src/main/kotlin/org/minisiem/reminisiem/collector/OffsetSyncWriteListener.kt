@@ -12,18 +12,17 @@ import java.time.LocalDateTime
 // 하나가 롤백되면 나머지도 함께 롤백된다. (chunk 단위 원자성 보장)
 class OffsetSyncWriteListener(
     private val reader: LogFileReader,
-    private val fileOffsetRepository: FileOffsetRepository,
-    private val filePath: String
+    private val fileOffsetRepository: FileOffsetRepository
 ) : ItemWriteListener<Log> {
 
     override fun afterWrite(items: Chunk<out Log>) {
-        val existing = fileOffsetRepository.findByFilePath(filePath)
+        val existing = fileOffsetRepository.findByFilePath(reader.filePath)
         if (existing != null) {
             existing.byteOffset = reader.currentOffset
             fileOffsetRepository.save(existing)
         } else {
             fileOffsetRepository.save(
-                FileOffSet(filePath = filePath, byteOffset = reader.currentOffset, lastReadAt = LocalDateTime.now())
+                FileOffSet(filePath = reader.filePath, byteOffset = reader.currentOffset, lastReadAt = LocalDateTime.now())
             )
         }
     }

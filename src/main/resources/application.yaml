@@ -4,3 +4,7 @@ spring:
   batch:
     job:
       enabled: false
+
+app:
+  log:
+    file-path: C:/tmp/nginx/access.log

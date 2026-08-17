@@ -14,6 +14,7 @@ import org.springframework.batch.core.step.Step
 import org.springframework.batch.core.step.builder.StepBuilder
 import org.springframework.batch.infrastructure.item.data.RepositoryItemWriter
 import org.springframework.batch.infrastructure.item.data.builder.RepositoryItemWriterBuilder
+import org.springframework.beans.factory.annotation.Value
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 import org.springframework.scheduling.annotation.EnableScheduling
@@ -21,9 +22,9 @@ import org.springframework.transaction.PlatformTransactionManager
 
 @EnableScheduling
 @Configuration
-class BatchConfig {
-
-    private val filePath = "C:/tmp/nginx/access.log" // 테스트용 값
+class BatchConfig(
+    @Value("\${app.log.file-path}") private val filePath: String
+) {
 
     @Bean
     fun logItemWriter(logRepository: LogRepository): RepositoryItemWriter<Log> {
@@ -39,7 +40,7 @@ class BatchConfig {
                 writer: RepositoryItemWriter<Log>,
                 fileOffsetRepository: FileOffsetRepository): Step {
         val reader = LogFileReader(filePath, fileOffsetRepository)
-        val offsetSyncWriteListener = OffsetSyncWriteListener(reader, fileOffsetRepository, filePath)
+        val offsetSyncWriteListener = OffsetSyncWriteListener(reader, fileOffsetRepository)
 
         return StepBuilder("logReaderStep", jobRepository)
             .chunk<String,Log>(10)
